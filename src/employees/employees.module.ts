@@ -9,6 +9,7 @@ import { Employee, EmployeeSchema } from '../common/schemas/employee.schema';
 import { Inquiry, InquirySchema } from '../common/schemas/inquiry.schema';
 import { R2Module } from '../r2/r2.module';
 import { AuthModule } from '../auth/auth.module';
+import { Counter, CounterSchema } from '../common/schemas/counter.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from '../auth/auth.module';
       { name: Employee.name, schema: EmployeeSchema },
     ]),
     MongooseModule.forFeature([{ name: Inquiry.name, schema: InquirySchema }]),
+    MongooseModule.forFeature([{ name: Counter.name, schema: CounterSchema }]),
     JwtModule.register({
       secret: jwtKey,
     }),

@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-guard.guard';
 import { ClockDto, LocationDto } from '../common/dto/clock.dto';
-import { InquiryDto, UpdateInquiryDto } from '../common/dto/inquiry.dto';
+import {
+  InquiryDto,
+  ResolveInquiryDto,
+  UpdateInquiryDto,
+} from '../common/dto/inquiry.dto';
 import { EmployeesService } from './employees.service';
 import { RequestWithUser } from '../common/types/req.types';
 import { UploadedFiles, UseInterceptors } from '@nestjs/common';
@@ -93,6 +97,15 @@ export class EmployeesController {
     return this.employeesService.getInquiries();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/inquiry/alerts')
+  async getAlerts(@Req() req: RequestWithUser) {
+    const user = await this.authService.getUserById(req.user.userId);
+    if (!user || user.level !== adminLevel)
+      throw new UnauthorizedException('This is not an admin account');
+    return this.employeesService.getAlerts();
+  }
+
   @Get('profile')
   getProfile(@Req() req: RequestWithUser) {
     return this.employeesService.getEmployeeById(req.user.userId);
@@ -116,5 +129,14 @@ export class EmployeesController {
   @Patch('/inquiry/:id')
   async updateInquiry(@Param('id') id: string, @Body() dto: UpdateInquiryDto) {
     return this.employeesService.updateInquiry(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/inquiry/:id/resolve')
+  async resolveInquiry(
+    @Param('id') id: string,
+    @Body() dto: ResolveInquiryDto,
+  ) {
+    return this.employeesService.resolveInquiry(id, dto);
   }
 }

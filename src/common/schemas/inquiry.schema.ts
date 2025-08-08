@@ -20,6 +20,9 @@ export class Inquiry {
   @Prop({ type: Types.ObjectId, ref: 'Employee', required: true })
   employee: Types.ObjectId;
 
+  @Prop({ required: true, unique: true })
+  inquiryNumber: number;
+
   @Prop({ required: true, type: LocationDto })
   location: LocationDto;
 

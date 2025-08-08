@@ -69,3 +69,29 @@ export class UpdateInquiryDto {
   @IsOptional()
   adminRemarks?: Array<AdminRemark>;
 }
+
+export class ResolveInquiryDto {
+  @IsOptional()
+  @IsString()
+  remarks?: string;
+
+  @IsOptional()
+  @IsString()
+  followUpDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  readyMix?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  blocks?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  buildingMaterial?: boolean;
+
+  @IsOptional()
+  @IsIn(['pending', 'in_progress', 'completed', 'rejected'])
+  status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
+}

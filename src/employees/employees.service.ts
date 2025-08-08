@@ -3,15 +3,21 @@ import { Injectable } from '@nestjs/common';
 import { Employee, EmployeeDocument } from '../common/schemas/employee.schema';
 import { Model, Types } from 'mongoose';
 import { Inquiry, InquiryDocument } from '../common/schemas/inquiry.schema';
-import { InquiryDto, UpdateInquiryDto } from '../common/dto/inquiry.dto';
+import {
+  InquiryDto,
+  ResolveInquiryDto,
+  UpdateInquiryDto,
+} from '../common/dto/inquiry.dto';
 import { LocationDto } from '../common/dto/clock.dto';
 import { r2PublicUrl } from '../config';
+import { Counter, CounterDocument } from '../common/schemas/counter.schema';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectModel(Employee.name) private employeeModel: Model<EmployeeDocument>,
     @InjectModel(Inquiry.name) private inquiryModel: Model<InquiryDocument>,
+    @InjectModel(Counter.name) private counterModel: Model<CounterDocument>,
   ) {}
 
   async getEmployeeById(id: string) {
@@ -69,8 +75,20 @@ export class EmployeesService {
     );
   }
 
+  async getNextSequence(name: string): Promise<number> {
+    const counter = await this.counterModel.findOneAndUpdate(
+      { name },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true },
+    );
+    return counter.value;
+  }
+
   async submitInquiry(userId: string, dto: InquiryDto) {
+    const inquiryNumber = await this.getNextSequence('inquiryNumber');
+
     return this.inquiryModel.create({
+      inquiryNumber,
       employee: userId,
       location: dto.location,
       remarks: dto.remarks,
@@ -109,7 +127,37 @@ export class EmployeesService {
     });
   }
 
+  async getAlerts(): Promise<Inquiry[]> {
+    const now = new Date();
+
+    const inquiries = await this.inquiryModel.find({
+      $and: [
+        {
+          $or: [
+            { blocks: false },
+            { readyMix: false },
+            { buildingMaterial: false },
+            { followUpDate: { $lt: now } },
+          ],
+        },
+        { status: { $ne: 'completed' } },
+      ],
+    });
+
+    return inquiries.map((inquiry) => {
+      const modifiedInquiry = inquiry.toObject();
+      modifiedInquiry.photoUrls = modifiedInquiry.photoUrls.map(
+        (key: string) => `${r2PublicUrl}/${key}`,
+      );
+      return modifiedInquiry;
+    });
+  }
+
   async updateInquiry(id: string, dto: UpdateInquiryDto) {
+    return this.inquiryModel.findByIdAndUpdate(id, dto, { new: true });
+  }
+
+  async resolveInquiry(id: string, dto: ResolveInquiryDto) {
     return this.inquiryModel.findByIdAndUpdate(id, dto, { new: true });
   }
 }

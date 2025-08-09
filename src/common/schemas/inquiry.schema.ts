@@ -11,6 +11,7 @@ class Client {
 export class AdminRemark {
   content: string;
   added: Date;
+  followUp: Date;
 }
 
 export type InquiryDocument = Inquiry & Document;

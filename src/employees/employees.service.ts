@@ -11,6 +11,7 @@ import {
 import { LocationDto } from '../common/dto/clock.dto';
 import { r2PublicUrl } from '../config';
 import { Counter, CounterDocument } from '../common/schemas/counter.schema';
+import { ClockLog, ClockLogDocument } from '../common/schemas/clock-log.schema';
 
 @Injectable()
 export class EmployeesService {
@@ -18,13 +19,29 @@ export class EmployeesService {
     @InjectModel(Employee.name) private employeeModel: Model<EmployeeDocument>,
     @InjectModel(Inquiry.name) private inquiryModel: Model<InquiryDocument>,
     @InjectModel(Counter.name) private counterModel: Model<CounterDocument>,
+    @InjectModel(ClockLog.name) private clockLogModel: Model<ClockLogDocument>,
   ) {}
 
   async getEmployeeById(id: string) {
     return this.employeeModel.findById(id);
   }
 
-  async clockIn(userId: string, location: any) {
+  private async logAction(
+    userId: string,
+    action: ClockLog['action'],
+    location?: LocationDto,
+  ) {
+    await this.clockLogModel.create({
+      employee: new Types.ObjectId(userId),
+      action,
+      location,
+      timestamp: new Date(),
+    });
+  }
+
+  async clockIn(userId: string, location: LocationDto) {
+    await this.logAction(userId, 'clock_in', location);
+
     return this.employeeModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       {
@@ -39,6 +56,7 @@ export class EmployeesService {
   }
 
   async clockOut(userId: string) {
+    await this.logAction(userId, 'clock_out');
     return this.employeeModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       {
@@ -52,6 +70,7 @@ export class EmployeesService {
   }
 
   async startBreak(userId: string) {
+    await this.logAction(userId, 'break');
     return this.employeeModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       {
@@ -64,6 +83,7 @@ export class EmployeesService {
   }
 
   async resumeWork(userId: string) {
+    await this.logAction(userId, 'resume');
     return this.employeeModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       {
@@ -73,6 +93,12 @@ export class EmployeesService {
       },
       { new: true },
     );
+  }
+
+  async getEmployeeLogs(employeeId: string) {
+    return this.clockLogModel
+      .find({ employee: new Types.ObjectId(employeeId) })
+      .sort({ timestamp: -1 });
   }
 
   async getNextSequence(name: string): Promise<number> {

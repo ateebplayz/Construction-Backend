@@ -55,7 +55,7 @@ export class EmployeesController {
   }
 
   @Post('inquiry')
-  @UseInterceptors(FilesInterceptor('photos', 5, multerOptions))
+  @UseInterceptors(FilesInterceptor('media', 10, multerOptions))
   async submitInquiry(
     @Req() req: RequestWithUser,
     @UploadedFiles() files: Express.Multer.File[],
@@ -138,5 +138,15 @@ export class EmployeesController {
     @Body() dto: ResolveInquiryDto,
   ) {
     return this.employeesService.resolveInquiry(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/logs')
+  async getEmployeeLogs(@Param('id') id: string, @Req() req: RequestWithUser) {
+    const user = await this.authService.getUserById(req.user.userId);
+    if (!user || user.level !== adminLevel)
+      throw new UnauthorizedException('This is not an admin account');
+    console.log(id);
+    return this.employeesService.getEmployeeLogs(id);
   }
 }

@@ -3,10 +3,13 @@ import * as multer from 'multer';
 
 export const multerOptions: MulterOptions = {
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 }, // bumped to 50MB for videos
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith('image/')) {
-      cb(new Error('Only image files are allowed!'), false);
+    if (
+      !file.mimetype.startsWith('image/') &&
+      !file.mimetype.startsWith('video/')
+    ) {
+      cb(new Error('Only image and video files are allowed!'), false);
     } else {
       cb(null, true);
     }

@@ -95,3 +95,25 @@ export class ResolveInquiryDto {
   @IsIn(['pending', 'in_progress', 'completed', 'rejected'])
   status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
 }
+
+export class EditInquiryDto {
+  @IsString()
+  @IsNotEmpty()
+  remarks: string;
+
+  @ValidateNested()
+  @Type(() => ClientInfoDto)
+  client: ClientInfoDto;
+
+  @IsOptional()
+  @IsBoolean()
+  readyMix?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  blocks?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  buildingMaterial?: boolean;
+}

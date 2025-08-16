@@ -12,6 +12,7 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-guard.guard';
 import { ClockDto, LocationDto } from '../common/dto/clock.dto';
 import {
+  EditInquiryDto,
   InquiryDto,
   ResolveInquiryDto,
   UpdateInquiryDto,
@@ -148,5 +149,11 @@ export class EmployeesController {
       throw new UnauthorizedException('This is not an admin account');
     console.log(id);
     return this.employeesService.getEmployeeLogs(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('edit/:id')
+  async editInquiry(@Param('id') id: string, @Body() dto: EditInquiryDto) {
+    return this.employeesService.editInquiry(id, dto);
   }
 }

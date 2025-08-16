@@ -1,9 +1,10 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 import { Employee, EmployeeDocument } from '../common/schemas/employee.schema';
-import { Model, Types } from 'mongoose';
+import { Model, Types, UpdateQuery } from 'mongoose';
 import { Inquiry, InquiryDocument } from '../common/schemas/inquiry.schema';
 import {
+  EditInquiryDto,
   InquiryDto,
   ResolveInquiryDto,
   UpdateInquiryDto,
@@ -184,6 +185,53 @@ export class EmployeesService {
   }
 
   async resolveInquiry(id: string, dto: ResolveInquiryDto) {
-    return this.inquiryModel.findByIdAndUpdate(id, dto, { new: true });
+    const updateOps: UpdateQuery<Inquiry> = {};
+
+    if (dto.status) updateOps.status = dto.status;
+    if (dto.followUpDate) updateOps.followUpDate = dto.followUpDate;
+    if (dto.readyMix !== undefined) updateOps.readyMix = dto.readyMix;
+    if (dto.blocks !== undefined) updateOps.blocks = dto.blocks;
+    if (dto.buildingMaterial !== undefined)
+      updateOps.buildingMaterial = dto.buildingMaterial;
+
+    const pushOps: UpdateQuery<Inquiry> = {};
+    if (dto.remarks) {
+      pushOps.adminRemarks = {
+        content: dto.remarks,
+        status: dto.status ?? undefined,
+        added: new Date(),
+        followUp: dto.followUpDate ? new Date(dto.followUpDate) : undefined,
+      };
+    }
+
+    return this.inquiryModel.findByIdAndUpdate(
+      id,
+      {
+        ...(Object.keys(updateOps).length > 0 && { $set: updateOps }),
+        ...(dto.remarks && { $push: pushOps }),
+      },
+      { new: true },
+    );
+  }
+  async editInquiry(id: string, dto: EditInquiryDto) {
+    const updateOps: UpdateQuery<Inquiry> = {};
+
+    if (dto.client) {
+      if (dto.client.name) updateOps['client.name'] = dto.client.name;
+      if (dto.client.phone) updateOps['client.phone'] = dto.client.phone;
+      if (dto.client.address) updateOps['client.address'] = dto.client.address;
+    }
+
+    if (dto.readyMix !== undefined) updateOps.readyMix = dto.readyMix;
+    if (dto.blocks !== undefined) updateOps.blocks = dto.blocks;
+    if (dto.buildingMaterial !== undefined)
+      updateOps.buildingMaterial = dto.buildingMaterial;
+
+    // push normal remark
+    if (dto.remarks) {
+      updateOps.remarks = dto.remarks;
+    }
+
+    return this.inquiryModel.findByIdAndUpdate(id, updateOps, { new: true });
   }
 }

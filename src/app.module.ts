@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
 import { R2Service } from './r2/r2.service';
 import { R2Module } from './r2/r2.module';
+import { InquiriesModule } from './inquiry/inquiry.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { R2Module } from './r2/r2.module';
     }),
     AuthModule,
     EmployeesModule,
+    InquiriesModule,
     R2Module,
   ],
   controllers: [AppController],

@@ -23,7 +23,7 @@ import { UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../common/utils/multer.util';
 import { R2Service } from '../r2/r2.service';
-import { adminLevel } from '../config';
+import { adminLevel, officeLevel } from '../config';
 import { AuthService } from '../auth/auth.service';
 
 @Controller('employees')
@@ -93,7 +93,7 @@ export class EmployeesController {
   @Get('/inquiry/all')
   async getInquiries(@Req() req: RequestWithUser) {
     const user = await this.authService.getUserById(req.user.userId);
-    if (!user || user.level !== adminLevel)
+    if (!user || (user.level !== adminLevel && user.level !== officeLevel))
       throw new UnauthorizedException('This is not an admin account');
     return this.employeesService.getInquiries();
   }
@@ -102,7 +102,7 @@ export class EmployeesController {
   @Get('/inquiry/alerts')
   async getAlerts(@Req() req: RequestWithUser) {
     const user = await this.authService.getUserById(req.user.userId);
-    if (!user || user.level !== adminLevel)
+    if (!user || (user.level !== adminLevel && user.level !== officeLevel))
       throw new UnauthorizedException('This is not an admin account');
     return this.employeesService.getAlerts();
   }
@@ -122,7 +122,7 @@ export class EmployeesController {
   @Get('/all')
   async getUsers(@Req() req: RequestWithUser) {
     const user = await this.authService.getUserById(req.user.userId);
-    if (!user || user.level !== adminLevel)
+    if (!user || (user.level !== adminLevel && user.level !== officeLevel))
       throw new UnauthorizedException('This is not an admin account');
     return this.employeesService.getUsers();
   }
@@ -145,7 +145,7 @@ export class EmployeesController {
   @Get(':id/logs')
   async getEmployeeLogs(@Param('id') id: string, @Req() req: RequestWithUser) {
     const user = await this.authService.getUserById(req.user.userId);
-    if (!user || user.level !== adminLevel)
+    if (!user || (user.level !== adminLevel && user.level !== officeLevel))
       throw new UnauthorizedException('This is not an admin account');
     console.log(id);
     return this.employeesService.getEmployeeLogs(id);

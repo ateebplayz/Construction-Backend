@@ -74,6 +74,12 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('')
+  getUser(@Req() req: RequestWithUser) {
+    return this.authService.getUserById(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('/users/all')
   async getUsers(@Req() req: RequestWithUser) {
     const user = await this.authService.getUserById(req.user.userId);

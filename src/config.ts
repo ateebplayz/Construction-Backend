@@ -5,6 +5,7 @@ const mongoUrl = process.env.MONGO_URL || '';
 const jwtKey = process.env.JWT_KEY || '';
 const adminLevel = 1;
 const employeeLevel = 0;
+const officeLevel = 2;
 const r2AccessKey = process.env.R2_ACCESS_KEY || '';
 const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY || '';
 const r2Url = process.env.R2_URL || '';
@@ -16,6 +17,7 @@ export {
   jwtKey,
   adminLevel,
   employeeLevel,
+  officeLevel,
   r2AccessKey,
   r2SecretAccessKey,
   r2Url,

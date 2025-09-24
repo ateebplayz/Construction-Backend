@@ -120,4 +120,40 @@ export class InquiryService {
       .lean()
       .exec();
   }
+
+  async findUnreadChatsForUser(userId: string) {
+    const userObjId = new Types.ObjectId(userId);
+
+    const chats = await this.chatModel.find({ participants: userObjId }).lean();
+
+    const result = await Promise.all(
+      chats.map(async (chat) => {
+        const unreadCount = await this.messageModel.countDocuments({
+          chatId: chat._id,
+          readBy: { $ne: userObjId },
+        });
+        return { ...chat, unreadCount };
+      }),
+    );
+
+    return result.filter((c) => c.unreadCount > 0);
+  }
+
+  async markMessagesAsRead(invoiceId: string, userId: string) {
+    const userObjId = new Types.ObjectId(userId);
+    const chatDoc = await this.chatModel.findOne({
+      invoiceId: new Types.ObjectId(invoiceId),
+    });
+    if (chatDoc) {
+      await this.messageModel.updateMany(
+        {
+          chatId: chatDoc._id,
+          readBy: { $ne: userObjId }, // not already read
+        },
+        { $addToSet: { readBy: userObjId } }, // push if not exists
+      );
+    }
+
+    return { success: true };
+  }
 }

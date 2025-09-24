@@ -20,7 +20,6 @@ export class InquiryController {
   @UseGuards(JwtAuthGuard)
   async getChats(@Req() req: RequestWithUser) {
     const employeeId = req.user.userId;
-    console.log(employeeId);
     if (!employeeId) return [];
     return this.chatService.findChatsForEmployee(employeeId);
   }
@@ -50,5 +49,20 @@ export class InquiryController {
   ) {
     const lim = limit ? parseInt(limit, 10) : 50;
     return this.chatService.findMessagesByChatId(chatId, lim);
+  }
+
+  @Get('unread')
+  @UseGuards(JwtAuthGuard)
+  async getUnread(@Req() req: RequestWithUser) {
+    return this.chatService.findUnreadChatsForUser(req.user.userId);
+  }
+
+  @Post(':chatId/read')
+  @UseGuards(JwtAuthGuard)
+  async markAsRead(
+    @Req() req: RequestWithUser,
+    @Param('chatId') chatId: string,
+  ) {
+    return this.chatService.markMessagesAsRead(chatId, req.user.userId);
   }
 }
